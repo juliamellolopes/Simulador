@@ -16,7 +16,7 @@ int main()
     int PC = 0;
 
     // Simulação de execução da instrução ADD
-    cout << "Simulando execução de uma instrução ADD" << endl;
+    cout << "Simulando execucao de uma instrucao ADD" << endl;
     InstructionFetch(PC);
     InstructionDecode();
     Execute(registradores[0], registradores[1]);

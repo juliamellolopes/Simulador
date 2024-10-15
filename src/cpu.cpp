@@ -22,7 +22,7 @@ void UnidadeControle(int opcode)
         cout << "Executando soma." << endl;
         break;
     case 1: // SUB
-        cout << "Executando subtração." << endl;
+        cout << "Executando subtracao." << endl;
         break;
     default:
         cout << "Instrução desconhecida." << endl;

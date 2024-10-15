@@ -14,7 +14,7 @@ int lerMemoria(int endereco)
 {
     if (!cache.empty() && cache.front() == endereco)
     {
-        cout << "Cache HIT no endereço: " << endereco << endl;
+        cout << "Cache HIT no endereco: " << endereco << endl;
         return memoria[endereco];
     }
 
@@ -24,7 +24,7 @@ int lerMemoria(int endereco)
     }
 
     cache.push(endereco);
-    cout << "Cache MISS, carregando endereço: " << endereco << endl;
+    cout << "Cache MISS, carregando endereco: " << endereco << endl;
 
     return memoria[endereco];
 }

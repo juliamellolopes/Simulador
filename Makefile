@@ -23,7 +23,7 @@ $(OBJ_DIR):
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-# Regra padrão
+# Regra padrão para compilar o projeto
 all: $(OBJ_DIR) $(BIN_DIR) $(TARGET)
 
 # Linkagem final

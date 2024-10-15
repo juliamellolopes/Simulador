@@ -1,0 +1,21 @@
+# Ignorar arquivos de objetos compilados
+*.o
+
+# Ignorar arquivos de binários/executáveis
+*.exe
+*.out
+
+# Ignorar pastas de binários e objetos
+/bin
+/obj
+
+# Ignorar arquivos de compilação temporários
+*.log
+*.tmp
+*.swp
+
+# Ignorar o Makefile gerado automaticamente (se aplicável)
+Makefile~
+
+# Ignorar outros arquivos que não devem ser versionados
+.DS_Store  # (Para macOS, se aplicável)

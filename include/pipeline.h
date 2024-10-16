@@ -3,7 +3,6 @@
 
 #include "cpu.h"
 
-// Classe que representa o pipeline MIPS
 class Pipeline
 {
 public:

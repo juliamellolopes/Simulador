@@ -33,6 +33,7 @@ void Pipeline::InstructionDecode()
     cout << "Resultado sera armazenado no Registrador R" << registradorDestino << endl;
 }
 
+// Execute (EX): executa a operação com base no opcode
 void Pipeline::Execute()
 {
     cout << "\n--------- Pipeline Stage: Execution ---------\n";

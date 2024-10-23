@@ -15,7 +15,7 @@ public:
     // Construtor
     Pipeline(CPU &cpuRef);
 
-    // Instruction Fetch (IF): busca a instrução da memória (simulada)
+    // Instruction Fetch (IF): busca a instrução da memória
     void InstructionFetch(int instrucao);
 
     // Instruction Decode (ID): decodifica a instrução e carrega os operandos

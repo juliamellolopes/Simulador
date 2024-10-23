@@ -6,10 +6,10 @@ using namespace std;
 
 int main()
 {
-    CPU cpu(2); // Criando uma CPU com 2 cores (você pode ajustar o número de cores conforme necessário)
+    CPU cpu(2); // Criando uma CPU com 2 cores
     Pipeline pipeline(cpu);
 
-        cpu.escreverRegistrador(1, 10);
+    cpu.escreverRegistrador(1, 10);
     cpu.escreverRegistrador(2, 20);
 
     // Simulação de uma instrução ADD (código fictício)
@@ -27,7 +27,7 @@ int main()
     cpu.escreverRegistrador(1, 50);
     cpu.escreverRegistrador(2, 30);
 
-    // Simulação de uma instrução SUB (código fictício)
+    // Simulação de uma instrução SUB
     instrucao = 0x200A1000; // opcode = 1 (SUB), reg1 = 1, reg2 = 2, destino = 3
     cout << "\nPipeline processando instrucao SUB...\n";
     pipeline.InstructionFetch(instrucao);

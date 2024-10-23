@@ -3,6 +3,7 @@
 
 #include "cpu.h"
 
+// Classe que representa o pipeline MIPS
 class Pipeline
 {
 public:
@@ -12,10 +13,13 @@ public:
     int operando1, operando2; // Operandos da instrução
     int registradorDestino;   // Registrador de destino para a operação
 
+    // Adicionando reg1 e reg2 como membros da classe
+    int reg1, reg2;
+
     // Construtor
     Pipeline(CPU &cpuRef);
 
-    // Instruction Fetch (IF): busca a instrução da memória
+    // Instruction Fetch (IF): busca a instrução da memória (simulada)
     void InstructionFetch(int instrucao);
 
     // Instruction Decode (ID): decodifica a instrução e carrega os operandos

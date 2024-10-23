@@ -23,7 +23,7 @@ void CPU::alternarCore(int novoCore)
     }
     else
     {
-        cout << "\nErro: Core " << novoCore << " nao existe!" << endl;
+        cout << "\nErro: Core " << novoCore << " não existe!" << endl;
     }
 }
 
@@ -38,4 +38,13 @@ void CPU::escreverRegistrador(int indice, int valor)
 {
     cores[coreAtivo].registradores[indice] = valor;
     cout << "Valor " << valor << " foi escrito no Registrador R" << indice << " no Core " << coreAtivo << endl;
+}
+
+// Função para mostrar o estado dos registradores relevantes após a execução de uma instrução
+void CPU::mostrarEstadoRegistradores(int reg1, int reg2, int regDestino)
+{
+    cout << "\nEstado atualizado dos registradores no Core " << coreAtivo << ":\n";
+    cout << "R" << reg1 << ": " << cores[coreAtivo].registradores[reg1] << endl;
+    cout << "R" << reg2 << ": " << cores[coreAtivo].registradores[reg2] << endl;
+    cout << "R" << regDestino << ": " << cores[coreAtivo].registradores[regDestino] << endl;
 }

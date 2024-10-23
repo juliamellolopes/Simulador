@@ -6,33 +6,35 @@ using namespace std;
 
 int main()
 {
-    CPU cpu(2); // Criando uma CPU com 2 cores
+    int numCores = 4; // Define a quantidade de cores
+    CPU cpu(numCores);
     Pipeline pipeline(cpu);
 
-    cpu.escreverRegistrador(1, 10);
-    cpu.escreverRegistrador(2, 20);
+    cout << "\n--- Iniciando Simulacao ---\n";
 
-    // Simulação de uma instrução ADD (código fictício)
-    int instrucao = 0x040A1000; // opcode = 0 (ADD), reg1 = 1, reg2 = 2, destino = 3
-    cout << "\nPipeline processando instrucao ADD...\n";
-    pipeline.InstructionFetch(instrucao);
-    pipeline.InstructionDecode();
-    pipeline.Execute();
+    for (int core = 0; core < numCores; core++)
+    {
+        cout << "\n--- Core " << core << " Ativo ---\n";
+        cpu.alternarCore(core);
 
-    // Alternar automaticamente para o Core 1
-    cout << "\n--- Alternando automaticamente para Core 1 ---\n";
-    cpu.alternarCore(1);
+        cpu.escreverRegistrador(1, (core + 1) * 10); // Escrevendo valores em R1
+        cpu.escreverRegistrador(2, (core + 1) * 20); // Escrevendo valores em R2
 
-    // Escrevendo valores nos registradores do novo core (Core 1)
-    cpu.escreverRegistrador(1, 50);
-    cpu.escreverRegistrador(2, 30);
+        // Instrução ADD (ADD R3, R1, R2)
+        int instrucaoADD = 0x00221820; // opcode = 0 (ADD), reg1 = 1, reg2 = 2, destino = 3
+        cout << "\nPipeline processando instrucao ADD no Core " << core << "...\n";
+        pipeline.InstructionFetch(instrucaoADD);
+        pipeline.InstructionDecode();
+        pipeline.Execute();
 
-    // Simulação de uma instrução SUB
-    instrucao = 0x200A1000; // opcode = 1 (SUB), reg1 = 1, reg2 = 2, destino = 3
-    cout << "\nPipeline processando instrucao SUB...\n";
-    pipeline.InstructionFetch(instrucao);
-    pipeline.InstructionDecode();
-    pipeline.Execute();
+        // Instrução SUB (SUB R3, R1, R2)
+        int instrucaoSUB = 0x00221822; // opcode = 1 (SUB), reg1 = 1, reg2 = 2, destino = 3
+        cout << "\nPipeline processando instrucao SUB no Core " << core << "...\n";
+        pipeline.InstructionFetch(instrucaoSUB);
+        pipeline.InstructionDecode();
+        pipeline.Execute();
+    }
 
+    cout << "\n--- Fim da Simulacao ---\n";
     return 0;
 }

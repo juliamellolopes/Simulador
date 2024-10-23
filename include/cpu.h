@@ -3,11 +3,13 @@
 
 #include <unordered_map>
 
+// Estrutura para armazenar o conjunto de registradores para cada core
 struct Core
 {
     int registradores[32]; // 32 registradores para cada core
 };
 
+// Classe que representa a CPU com múltiplos cores
 class CPU
 {
 public:
@@ -24,6 +26,9 @@ public:
 
     // Função para escrever em um registrador do core ativo
     void escreverRegistrador(int indice, int valor);
+
+    // Nova função para mostrar o estado atual dos registradores no core ativo
+    void mostrarEstadoRegistradores(int reg1, int reg2, int regDestino);
 };
 
 #endif

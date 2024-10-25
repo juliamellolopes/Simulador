@@ -1,30 +1,39 @@
 #include "memory.h"
-#include <iostream>
-#include <queue>
-#include <vector>
 
-using namespace std;
-
-vector<int> memoria(1024, 0); // 1024 posições de memória
-queue<int> cache;             // Cache FIFO
-const int TAMANHO_CACHE = 4;  // Tamanho da cache
-
-// Função para ler a memória com uso de cache
-int lerMemoria(int endereco)
+// Construtor da memória
+Memory::Memory()
 {
-    if (!cache.empty() && cache.front() == endereco)
+    // Inicialização da memória, se necessário
+    // Não há necessidade de inicialização explícita para unordered_map
+}
+
+// Escreve um valor em um endereço de memória
+void Memory::escrever(int endereco, int valor)
+{
+    memoria[endereco] = valor;
+    cout << "Valor " << valor << " foi armazenado no endereco " << endereco << endl;
+}
+
+// Lê um valor de um endereço de memória
+int Memory::ler(int endereco)
+{
+    if (memoria.find(endereco) != memoria.end())
     {
-        cout << "Cache HIT no endereco: " << endereco << endl;
         return memoria[endereco];
     }
-
-    if (cache.size() == TAMANHO_CACHE)
+    else
     {
-        cache.pop();
+        cerr << "Erro: Endereco de memoria nao encontrado!" << endl;
+        return -1; // Valor inválido para indicar erro
     }
+}
 
-    cache.push(endereco);
-    cout << "Cache MISS, carregando endereco: " << endereco << endl;
-
-    return memoria[endereco];
+// Exibe o estado da memória
+void Memory::mostrarMemoria()
+{
+    cout << "\n--- Estado Atual da Memória ---\n";
+    for (const auto &entry : memoria)
+    {
+        cout << "Endereco " << entry.first << ": " << entry.second << endl;
+    }
 }

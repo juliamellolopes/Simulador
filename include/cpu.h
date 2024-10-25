@@ -1,34 +1,28 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include <vector>
+#include <iostream>
 #include <unordered_map>
 
-// Estrutura para armazenar o conjunto de registradores para cada core
-struct Core
-{
-    int registradores[32]; // 32 registradores para cada core
-};
+using namespace std;
 
-// Classe que representa a CPU com múltiplos cores
 class CPU
 {
 public:
-    std::unordered_map<int, Core> cores; // Armazena os cores disponíveis
-    int coreAtivo;                       // Índice do core ativo
+    CPU(int numCores);                                                // Construtor para inicializar com número de cores
+    void alternarCore(int coreId);                                    // Alternar entre cores
+    int lerRegistrador(int reg);                                      // Lê o valor de um registrador
+    void escreverRegistrador(int reg, int valor);                     // Escreve um valor em um registrador
+    void escreverNaMemoria(int endereco, int valor);                  // Escreve na memória
+    int lerDaMemoria(int endereco);                                   // Lê da memória
+    void mostrarEstadoRegistradores(int reg1, int reg2, int regDest); // Exibe o estado dos registradores
 
-    CPU(int numCores); // Construtor da CPU
-
-    // Função para alterar o core ativo
-    void alternarCore(int novoCore);
-
-    // Função para acessar os registradores do core ativo
-    int lerRegistrador(int indice);
-
-    // Função para escrever em um registrador do core ativo
-    void escreverRegistrador(int indice, int valor);
-
-    // Nova função para mostrar o estado atual dos registradores no core ativo
-    void mostrarEstadoRegistradores(int reg1, int reg2, int regDestino);
+private:
+    int numCoresAtivos;
+    int coreAtivo;
+    vector<vector<int>> registradores; // Matriz de registradores para múltiplos cores
+    unordered_map<int, int> memoria;   // Simulação de memória
 };
 
 #endif

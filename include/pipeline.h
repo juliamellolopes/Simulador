@@ -3,30 +3,19 @@
 
 #include "cpu.h"
 
-// Classe que representa o pipeline MIPS
 class Pipeline
 {
 public:
-    CPU &cpu;                 // Referência à CPU para acessar os cores
-    int instrucaoAtual;       // A instrução que está sendo processada
-    int opcode;               // O código de operação da instrução
-    int operando1, operando2; // Operandos da instrução
-    int registradorDestino;   // Registrador de destino para a operação
-
-    // Adicionando reg1 e reg2 como membros da classe
-    int reg1, reg2;
-
-    // Construtor
-    Pipeline(CPU &cpuRef);
-
-    // Instruction Fetch (IF): busca a instrução da memória (simulada)
+    Pipeline(CPU &cpu);
     void InstructionFetch(int instrucao);
-
-    // Instruction Decode (ID): decodifica a instrução e carrega os operandos
     void InstructionDecode();
-
-    // Execute (EX): executa a operação com base no opcode
     void Execute();
+
+private:
+    CPU &cpu;
+    int instrucaoAtual;
+    int opcode;
+    int reg1, reg2, regDest;
 };
 
 #endif

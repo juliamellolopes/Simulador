@@ -1,6 +1,7 @@
 # Compilador e flags
 CXX = g++
-CXXFLAGS = -Iinclude -Wall
+CXXFLAGS = -Iinclude
+# CXXFLAGS = -Iinclude -Wall
 
 # Diretórios de código-fonte e destino dos binários
 SRC_DIR = src
@@ -41,3 +42,7 @@ clean:
 # Regra para rodar o simulador
 run: all
 	./$(TARGET)
+
+c: clean all run
+
+r: all run

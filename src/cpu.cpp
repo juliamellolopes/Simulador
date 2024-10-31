@@ -1,85 +1,72 @@
 #include "cpu.h"
 
+REG::REG() {
+    _registradores = vector(TAM_R, 0);
+}
+
 // Construtor da CPU com número de cores
-CPU::CPU(int numCores)
-{
-    numCoresAtivos = numCores;
+CPU::CPU() {
+    // numCoresAtivos = numCores;
     coreAtivo = 0;
-    // Inicializa os registradores para cada core com 32 registradores (todos com valor 0)
-    registradores.resize(numCores, vector<int>(32, 0));
-    cout << "--- Iniciando Simulacao com " << numCores << " Cores ---" << endl;
+    _cores = vector<REG>(TAM_C);
+    cout << "--- Iniciando Simulacao com " << TAM_C << " Cores e " << TAM_R << " Registradores cada ---" << endl;
 }
 
 // Alternar para um core específico
-void CPU::alternarCore(int coreId)
-{
-    if (coreId >= 0 && coreId < numCoresAtivos)
-    {
+void CPU::alternarCore(int coreId) {
+    if (coreId >= 0 && coreId < numCoresAtivos) {
         coreAtivo = coreId;
         cout << "--- Core " << coreAtivo << " Ativo ---" << endl;
-    }
-    else
-    {
+    } else {
         cerr << "Erro: Core inválido!" << endl;
     }
 }
 
 // Lê o valor de um registrador
-int CPU::lerRegistrador(int reg)
-{
-    if (reg >= 0 && reg < 32)
-    {
-        cout << "Lendo valor do Registrador R" << reg << " no Core " << coreAtivo << ": " << registradores[coreAtivo][reg] << endl;
-        return registradores[coreAtivo][reg];
-    }
-    else
-    {
+int CPU::lerRegistrador(int reg) {
+    if (reg > 0 && reg <= TAM_R) {
+        // cout << "Lendo valor do Registrador R" << reg << " no Core " << coreAtivo << ": " << registradores[coreAtivo][reg] << endl;
+        return _cores[coreAtivo]._registradores[reg];
+    } else {
         cerr << "Erro: Registrador invalido!" << endl;
         return -1;
     }
+
+    // return 2;
 }
 
 // Escreve um valor em um registrador
-void CPU::escreverRegistrador(int reg, int valor)
-{
-    if (reg >= 0 && reg < 32)
-    {
-        registradores[coreAtivo][reg] = valor;
+void CPU::escreverRegistrador(int reg, int valor) {
+    if (reg > 0 && reg <= TAM_R) {
+        _cores[coreAtivo]._registradores[reg] = valor;
         cout << "Valor " << valor << " foi escrito no Registrador R" << reg << " no Core " << coreAtivo << endl;
-    }
-    else
-    {
+    } else {
         cerr << "Erro: Registrador invalido!" << endl;
     }
 }
 
 // Escreve um valor em um endereço de memória
-void CPU::escreverNaMemoria(int endereco, int valor)
-{
+void CPU::escreverNaMemoria(int endereco, int valor) {
     memoria[endereco] = valor;
     cout << "Valor " << valor << " foi armazenado no endereco " << endereco << endl;
 }
 
 // Lê um valor de um endereço de memória
-int CPU::lerDaMemoria(int endereco)
-{
-    if (memoria.find(endereco) != memoria.end())
-    {
+int CPU::lerDaMemoria(int endereco) {
+    if (memoria.find(endereco) != memoria.end()) {
         cout << "Lendo valor do endereco " << endereco << ": " << memoria[endereco] << endl;
         return memoria[endereco];
-    }
-    else
-    {
+    } else {
         cerr << "Erro: Endereco de memoria nao encontrado!" << endl;
         return -1;
     }
 }
 
 // Exibe o estado de registradores relevantes
-void CPU::mostrarEstadoRegistradores(int reg1, int reg2, int regDest)
-{
-    cout << "Estado atualizado dos registradores no Core " << coreAtivo << ":\n";
-    cout << "R" << reg1 << ": " << registradores[coreAtivo][reg1] << endl;
-    cout << "R" << reg2 << ": " << registradores[coreAtivo][reg2] << endl;
-    cout << "R" << regDest << ": " << registradores[coreAtivo][regDest] << endl;
+void CPU::mostrarEstadoRegistradores(int reg1, int reg2, int regDest) {
+    // cout << "Estado atualizado dos registradores no Core " << coreAtivo << ":\n";
+    // cout << "R" << reg1 << ": " << registradores[coreAtivo][reg1] << endl;
+    // cout << "R" << reg2 << ": " << registradores[coreAtivo][reg2] << endl;
+    // cout << "R" << regDest << ": " << registradores[coreAtivo][regDest] << endl;
 }
+

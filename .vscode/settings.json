@@ -1,5 +1,11 @@
 {
-    "files.associations": {
-        "unordered_map": "cpp"
-    }
+  "files.associations": {
+    "unordered_map": "cpp",
+    "vector": "cpp",
+    "iostream": "cpp",
+    "string": "cpp",
+    "fstream": "cpp",
+    "xstring": "cpp",
+    "ostream": "cpp"
+  }
 }

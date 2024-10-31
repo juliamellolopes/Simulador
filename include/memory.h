@@ -6,8 +6,7 @@
 
 using namespace std;
 
-class Memory
-{
+class Memory {
 public:
     Memory();                               // Construtor
     void escrever(int endereco, int valor); // Escreve na memória
@@ -15,7 +14,7 @@ public:
     void mostrarMemoria();                  // Exibe o estado da memória
 
 private:
-    unordered_map<int, int> memoria; // Simulação da memória
+    unordered_map<int, int> memoria;        // Simulação da memória
 };
 
 #endif

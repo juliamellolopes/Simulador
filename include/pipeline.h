@@ -1,29 +1,26 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-#include <fstream>
-#include <sstream>
-#include <queue>
+#include "memory.h"
 #include "cpu.h"
 
 #define DBG(x) std::cerr << #x << " = " << (x) <<std::endl;
 
 class Pipeline {
 public:
-    Pipeline();
+    Pipeline() {}
+    Pipeline(MemoryRAM &memory, CPU &cpu);
     void InstructionFetch();
     void InstructionDecode();
-    int ULA(int var1, int var2, char var3);        // Unidade logica aritimetica  
-    void UC(int opcode);                           // Unidade de controle 
+    void Execute(string code);
     vector<string>tokenizar(string &instrucao);
+    void loop();
 
 private:
-    queue<string>_instrucoes;
     string _instrucaoAtual;
     string _opcode;
-    int _reg1, _reg2, _regDest;
+    MemoryRAM _memoryRAM;
     CPU _cpu;
-    string _path;
 };
 
 #endif

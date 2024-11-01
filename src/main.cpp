@@ -1,17 +1,18 @@
 #include <iostream>
 // #include <fstream>
 // #include <sstream>
-#include "cpu.h"
-#include "pipeline.h"
-#include "memory.h"
+// #include "cpu.h"
+#include "../include/pipeline.h"
+// #include "../include/memory.h"
+// #include "../include/cpu.h"
 
 using namespace std;
 
 
 int main() {
-    Pipeline pipeline;
-    pipeline.InstructionFetch();
-    // Memory memory;
+    MemoryRAM memory("instructions.txt");
+    CPU cpu(memory);
+    Pipeline pipeline(memory, cpu);
 
     return 0;
 }

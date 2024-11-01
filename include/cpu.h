@@ -1,9 +1,11 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include <vector>
 #include <iostream>
 #include <unordered_map>
+
+#include "memory.h"
+// #include "pipeline.h"
 
 using namespace std;
 
@@ -24,20 +26,23 @@ private:
 #endif
 class CPU {
 public:
-    CPU();                                                            // Construtor para inicializar com número de cores
-    void alternarCore(int coreId);                                    // Alternar entre cores
+    CPU() {}                                                           // Construtor para inicializar com número de cores
+    CPU(MemoryRAM &memory);                                              // Construtor para inicializar com número de cores
     int lerRegistrador(int reg);                                      // Lê o valor de um registrador
     void escreverRegistrador(int reg, int valor);                     // Escreve um valor em um registrador
-    void escreverNaMemoria(int endereco, int valor);                  // Escreve na memória
-    int lerDaMemoria(int endereco);                                   // Lê da memória
-    void mostrarEstadoRegistradores(int reg1, int reg2, int regDest); // Exibe o estado dos registradores
-    
+    void escreverNaMemoria(int endereco);                             // Escreve na memória
+    int ULA(int var1, int var2, char var3);                           // Unidade logica aritimetica  
+    void UC(int opcode);                                              // Unidade de controle 
+    int getPC();
+    void incrementaPC();
+    int _reg1, _reg2, _regDest;
 
 private:
-    int numCoresAtivos;
-    int coreAtivo;
+    int _coreAtivo;
+    int _PC;
     vector<REG> _cores;
-    unordered_map<int, int> memoria;                                  // Simulação de memória
+    MemoryRAM _memoryRAM;
+    MemoryCache _memoryCache;
 };
 
 #endif

@@ -6,6 +6,10 @@
     "string": "cpp",
     "fstream": "cpp",
     "xstring": "cpp",
-    "ostream": "cpp"
+    "ostream": "cpp",
+    "iosfwd": "cpp",
+    "queue": "cpp",
+    "format": "cpp",
+    "utility": "cpp"
   }
 }

@@ -1,43 +1,4 @@
-#include "pipeline.h"
-#include <iostream>
-
-using namespace std;
-
-Pipeline::Pipeline() {
-    _instrucaoAtual.assign("");
-    _path.assign("instructions.txt");
-    _opcode.assign("");
-    _reg1 = _reg2 = _regDest = 0;
-}
-
-// Etapa de busca
-void Pipeline::InstructionFetch() {
-    // _instrucaoAtual = instrucao;
-    cout << "\n--------- Pipeline Stage: Instruction Fetch ---------\n";
-    cout << "Buscando instrucoes..." << endl;
-
-    ifstream instrFile(_path);
-    string linha;
-
-    if (instrFile.is_open()) {
-        while (getline(instrFile, linha)) {
-            _instrucoes.push(linha);
-        }
-    } else {
-        cerr << "Erro ao abrir o arquivo de instruções." << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    cout << "Instrucoes carregadas!" << endl;
-
-    while (!_instrucoes.empty()) {
-        auto instrucao = _instrucoes.front();
-        _instrucaoAtual.assign(instrucao);
-        InstructionDecode();
-        _instrucoes.pop();
-    }
-
-}
+#include "../include/pipeline.h"
 
 vector<string> Pipeline::tokenizar(string &instrucao) {
     char del = ' ';
@@ -50,6 +11,43 @@ vector<string> Pipeline::tokenizar(string &instrucao) {
         tokens.push_back(token);
 
     return tokens;
+}
+
+Pipeline::Pipeline(MemoryRAM &memory, CPU &cpu) {
+    _memoryRAM = memory;
+    _cpu = cpu;
+    _instrucaoAtual.assign("");
+    _opcode.assign("");
+    _cpu._reg1 = _cpu._reg2 = _cpu._regDest = 0;
+
+    loop();
+}
+
+void Pipeline::loop() {
+    const int TAM_I = _memoryRAM.getSize();   // tamanho de instruções 
+    vector<bool> control(TAM_I, false);    // variavel de controle da utilização da instrução (true - usado, false - não usado)
+    int cont = TAM_I;
+
+    while (cont > 0) {
+        if (control[_cpu.getPC()] == false) {
+            cont = TAM_I;
+            control[_cpu.getPC()] = true;
+            InstructionFetch();
+        } else {
+            cont--;
+        }
+    }
+}
+
+// Etapa de busca
+void Pipeline::InstructionFetch() {
+    cout << "\n--------- Pipeline Stage: Instruction Fetch ---------\n";
+    cout << "Buscando instrucao..." << endl;
+    _instrucaoAtual.assign(_memoryRAM.getInstrucao(_cpu.getPC()));
+
+    InstructionDecode();
+
+    _cpu.incrementaPC();
 }
 
 // Função para converter o nome do registrador (ex: R1, R2) para o índice numérico (ex: 1, 2)
@@ -65,117 +63,55 @@ int obterIndiceRegistrador(const string &reg) {
 void Pipeline::InstructionDecode() {
     cout << "\n--------- Pipeline Stage: Instruction Decode ---------\n";
 
+    cout << "Decodificand: " << _instrucaoAtual << endl;
+
     auto tokens = tokenizar(_instrucaoAtual);
     _opcode = tokens[0];
 
     if (_opcode.compare("LOAD") == 0) {
-        _reg1 = obterIndiceRegistrador(tokens[1]);
+        _cpu._reg1 = obterIndiceRegistrador(tokens[1]);
         auto valor = stoi(tokens[2]);
-        _cpu.escreverRegistrador(_reg1, valor);
-    } else if (_opcode.compare("STORE") == 0) { 
+        _cpu.escreverRegistrador(_cpu._reg1, valor);
+    } else if (_opcode.compare("STORE") == 0) {
+        auto endereco = stoi(tokens[2]);
+        _cpu._reg1 = obterIndiceRegistrador(tokens[1]);
 
+        _cpu.escreverNaMemoria(endereco);
     } else if (_opcode.compare("IF") == 0) {
-        _reg1 = obterIndiceRegistrador(tokens[1]);
-        _reg2 = obterIndiceRegistrador(tokens[3]);
+        _cpu._reg1 = obterIndiceRegistrador(tokens[1]);
+        _cpu._reg2 = obterIndiceRegistrador(tokens[3]);
 
-        if (tokens[2].compare("<") == 0) {
-            UC(4);
-        } else if (tokens[2].compare(">") == 0) {
-            UC(5);
-        } else if (tokens[2].compare("=") == 0) {
-            UC(6);
-        }
+        Execute(tokens[2]);
     } else {
-        _regDest = obterIndiceRegistrador(tokens[1]);
-        _reg1 = obterIndiceRegistrador(tokens[2]);
-        _reg2 = obterIndiceRegistrador(tokens[3]);
+        _cpu._regDest = obterIndiceRegistrador(tokens[1]);
+        _cpu._reg1 = obterIndiceRegistrador(tokens[2]);
+        _cpu._reg2 = obterIndiceRegistrador(tokens[3]);
 
-        if (_opcode.compare("ADD") == 0) {
-            UC(0);
-        } else if (_opcode.compare("SUB") == 0) {
-            UC(1);
-        } else if (_opcode.compare("MULT") == 0) {
-            UC(2);
-        } else if (_opcode.compare("DIV") == 0) {
-            UC(3);
-        } else {
-            cerr << "Erro opcode nao encontrado." << endl;
-            exit(EXIT_FAILURE);
-        }
+        Execute(_opcode);
     }
 }
 
-// Unidade de Controle
-void Pipeline::UC(int opcode) {
-    int valor1 = _cpu.lerRegistrador(_reg1);
-    int valor2 = _cpu.lerRegistrador(_reg2);
-    int res;
-
-    switch (opcode) {
-    case 0:
-        res = ULA(valor1, valor2, '+');
-        cout << "Executando operacao ADD: " << valor1 << " + " << valor2 << " = " << res << endl;
-        break;
-    case 1:
-        res = ULA(valor1, valor2, '-');
-        cout << "Executando operacao SUB: " << valor1 << " - " << valor2 << " = " << res << endl;
-        break;
-    case 2:
-        res = ULA(valor1, valor2, '*');
-        cout << "Executando operacao MULT: " << valor1 << " * " << valor2 << " = " << res << endl;
-        break;
-    case 3:
-        res = ULA(valor1, valor2, '/');
-        cout << "Executando operacao DIV: " << valor1 << " / " << valor2 << " = " << res << endl;
-        break;
-    case 4:
-        res = ULA(valor1, valor2, '<');
-        cout << "Executando operacao IF: " << valor1 << " < " << valor2 << " = " << ((res) ? "Verdade" : "Falso") << endl;
-        break;
-    case 5:
-        res = ULA(valor1, valor2, '>');
-        cout << "Executando operacao IF: " << valor1 << " > " << valor2 << " = " << ((res) ? "Verdade" : "Falso") << endl;
-        break;
-    case 6:
-        res = ULA(valor1, valor2, '=');
-        cout << "Executando operacao IF: " << valor1 << " == " << valor2 << " = " << ((res) ? "Verdade" : "Falso") << endl;
-        break;
-    default:
-        res = 0;
-        break;
-    }
-
-    _cpu.escreverRegistrador(_regDest, res);
-}
-
-// Etapa de execução
-int Pipeline::ULA(int var1, int var2, char operador) {
-    int resultado;
-
+// Etapa de Execução
+void Pipeline::Execute(string code) {
     cout << "\n--------- Pipeline Stage: Execution ---------\n";
+    cout << "Chamando operações CPU" << endl;
 
-    switch (operador) {
-    case '+': // ADD
-        return var1 + var2;
-    case '-': // SUB
-        return var1 - var2;
-    case '*': // MULT
-        return var1 * var2;
-    case '/': // DIV
-        if (var2 != 0) {
-            return var1 / var2;
-        } else {
-            cerr << "[EX] Erro: Divisão por zero!" << endl;
-            exit(EXIT_FAILURE);
-        }
-    case '<':
-        return var1 < var2;
-    case '>':
-        return var1 > var2;
-    case '=':
-        return var1 == var2;
-    default:
-        cerr << "[EX] Operacao invalida!" << endl;
+    if (code.compare("<") == 0) {
+        _cpu.UC(4);
+    } else if (code.compare(">") == 0) {
+        _cpu.UC(5);
+    } else if (code.compare("=") == 0) {
+        _cpu.UC(6);
+    } else if (code.compare("ADD") == 0) {
+        _cpu.UC(0);
+    } else if (code.compare("SUB") == 0) {
+        _cpu.UC(1);
+    } else if (code.compare("MULT") == 0) {
+        _cpu.UC(2);
+    } else if (code.compare("DIV") == 0) {
+        _cpu.UC(3);
+    } else {
+        cerr << "Erro opcode nao encontrado." << endl;
         exit(EXIT_FAILURE);
     }
 }

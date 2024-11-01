@@ -80,19 +80,21 @@ make clean
 
 ### CPU e Registradores
 
-A CPU é modelada com 32 registradores e uma ULA (Unidade Lógica Aritmética), que executa operações como soma (`+`) e subtração (`-`). A Unidade de Controle decodifica as instruções recebidas e envia sinais de controle para a ULA, permitindo a execução da operação correspondente.
+A CPU possui múltiplos registradores organizados em núcleos, com suporte para uma ULA que executa operações aritméticas como soma (+), subtração (-), multiplicação (*) e divisão (/). A Unidade de Controle processa as instruções com base nos opcodes, gerenciando o fluxo dos dados entre os registradores e a memória.
 
 ### Memória e Cache
 
-A memória principal é um vetor de 1024 posições, e a cache é uma fila de tamanho fixo (4 posições), utilizando uma política de substituição FIFO. Quando a cache está cheia, o bloco mais antigo é removido para abrir espaço para novos blocos.
+A memória principal (RAM) armazena as instruções, enquanto a cache age como um buffer FIFO. Quando a cache atinge seu limite de capacidade, os dados mais antigos são transferidos para a RAM, liberando espaço para novas operações.
 
 ### Pipeline MIPS
 
 O pipeline MIPS simula a execução paralela de instruções em cinco estágios:
 
 - **Instruction Fetch (IF)**: Busca a instrução da memória.
-- **Instruction Decode (ID)**: Decodifica a instrução e prepara os operandos.
-- **Execute (EX)**: A ULA executa a operação (por exemplo, soma ou subtração).
+- **Instruction Decode (ID)**: Decodifica a instrução e identifica os operandos e o tipo de operação.
+- **Execute (EX)**: A ULA executa a operação aritmética e, caso necessário, armazena o resultado na memória.
 - **Memory Access (MEM)**: Lê ou escreve na memória.
 - **Write Back (WB)**: Escreve o resultado de volta nos registradores.
+
+O pipeline permite que as instruções sejam processadas em paralelo, simulando um sistema de execução com três estágios básicos.
 

@@ -1,5 +1,7 @@
 #include "../include/pipeline.h"
 
+
+// Separa uma instrução em tokens com base em um delimitador (' '), retornando um vetor de strings.
 vector<string> Pipeline::tokenizar(string &instrucao) {
     char del = ' ';
 
@@ -13,6 +15,7 @@ vector<string> Pipeline::tokenizar(string &instrucao) {
     return tokens;
 }
 
+// Inicializa o pipeline com referências para a memória e a CPU, ajustando valores iniciais e iniciando o loop de execução.
 Pipeline::Pipeline(MemoryRAM &memory, CPU &cpu) {
     _memoryRAM = memory;
     _cpu = cpu;
@@ -23,9 +26,10 @@ Pipeline::Pipeline(MemoryRAM &memory, CPU &cpu) {
     loop();
 }
 
+//  Controla o ciclo de execução de instruções. Itera até que todas as instruções na memória sejam executadas, chamando a etapa de busca (InstructionFetch) para instruções ainda não processadas.
 void Pipeline::loop() {
     const int TAM_I = _memoryRAM.getSize();   // tamanho de instruções 
-    vector<bool> control(TAM_I, false);    // variavel de controle da utilização da instrução (true - usado, false - não usado)
+    vector<bool> control(TAM_I, false);       // variavel de controle da utilização da instrução (true - usado, false - não usado)
     int cont = TAM_I;
 
     while (cont > 0) {
@@ -39,7 +43,7 @@ void Pipeline::loop() {
     }
 }
 
-// Etapa de busca
+// Executa a busca da instrução atual na memória e incrementa o contador de programa (PC). Passa a instrução para a próxima etapa, InstructionDecode.
 void Pipeline::InstructionFetch() {
     cout << "\n--------- Pipeline Stage: Instruction Fetch ---------\n";
     cout << "Buscando instrucao..." << endl;
@@ -50,7 +54,7 @@ void Pipeline::InstructionFetch() {
     _cpu.incrementaPC();
 }
 
-// Função para converter o nome do registrador (ex: R1, R2) para o índice numérico (ex: 1, 2)
+// Converte um nome de registrador (como R1) em seu índice numérico. Exibe uma mensagem de erro caso o registrador seja inválido.
 int obterIndiceRegistrador(const string &reg) {
     if (reg[0] == 'R') {
         return stoi(reg.substr(1)); // Converte o número após 'R' em um inteiro
@@ -59,7 +63,7 @@ int obterIndiceRegistrador(const string &reg) {
     exit(EXIT_FAILURE);
 }
 
-// Etapa de decodificação
+// Decodifica a instrução atual, identificando o opcode e os registradores envolvidos, utilizando a função auxiliar obterIndiceRegistrador para interpretar índices de registradores.
 void Pipeline::InstructionDecode() {
     cout << "\n--------- Pipeline Stage: Instruction Decode ---------\n";
 

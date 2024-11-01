@@ -1,9 +1,11 @@
 #include "../include/memory.h"
 
+// Inicializa a cache com uma referência à memória RAM.
 MemoryCache::MemoryCache(MemoryRAM memoryRAM) {
     _memoryRAM = memoryRAM;
 }
 
+// Escreve um par endereço-valor na cache. Caso a cache alcance o tamanho máximo (TAM_CACHE), move o valor mais antigo para a RAM chamando a função memoriaCheia().
 void MemoryCache::escrever(int endereco, int valor) {
     cout << "Guadando informação na Cache..." << endl;
     _cache.push(make_pair(endereco, valor));
@@ -14,13 +16,14 @@ void MemoryCache::escrever(int endereco, int valor) {
     }
 }
 
+// Remove o valor mais antigo da cache e o armazena na RAM, liberando espaço na cache.
 void MemoryCache::memoriaCheia() {
     auto retirar = _cache.front();
     _cache.pop();
     _memoryRAM.escrever(retirar.first, retirar.second);
 }
 
-// Construtor da memória
+// Carrega as instruções a partir de um arquivo de texto, adicionando cada linha ao vetor _instrucoes.
 MemoryRAM::MemoryRAM(string path) {
     ifstream instrFile(path);
     string linha;
@@ -37,34 +40,18 @@ MemoryRAM::MemoryRAM(string path) {
     cout << "Instrucoes carregadas!" << endl;
 }
 
+// Retorna a instrução armazenada em um endereço específico da memória.
 string MemoryRAM::getInstrucao(int endereco) {
     return _instrucoes.at(endereco);
 }
 
+// Retorna o número de instruções carregadas na memória.
 size_t MemoryRAM::getSize() {
     return _instrucoes.size();
 }
 
-// Escreve um valor em um endereço de memória
+// Armazena um valor em um endereço específico da memória RAM e exibe uma mensagem de confirmação.
 void MemoryRAM::escrever(int endereco, int valor) {
     _memoria[endereco] = valor;
     cout << "Valor " << valor << " foi armazenado no endereco " << endereco << endl;
 }
-
-// // Lê um valor de um endereço de memória
-// int MemoryRAM::ler(int endereco) {
-//     if (memoria.find(endereco) != memoria.end()) {
-//         return memoria[endereco];
-//     } else {
-//         cerr << "Erro: Endereco de memoria nao encontrado!" << endl;
-//         return -1; // Valor inválido para indicar erro
-//     }
-// }
-
-// // Exibe o estado da memória
-// void MemoryRAM::mostrarMemoria() {
-//     cout << "\n--- Estado Atual da Memória ---\n";
-//     for (const auto &entry : memoria) {
-//         cout << "Endereco " << entry.first << ": " << entry.second << endl;
-//     }
-// }

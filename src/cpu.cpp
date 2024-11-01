@@ -1,54 +1,41 @@
 #include "../include/cpu.h"
 
+// Inicializa o vetor de registradores com zeros.
 REG::REG() {
     _registradores = vector(TAM_R, 0);
 }
 
-// Construtor da CPU com número de cores
+// Inicializa a CPU com uma referência de memória e configura os registradores, ponteiro de programa e núcleo ativo.
 CPU::CPU(MemoryRAM &memory) {
     _memoryRAM = memory;
     _PC = 0;
     _coreAtivo = 0;
     _cores = vector<REG>(TAM_C);
     cout << "--- Iniciando Simulacao com " << TAM_C << " Cores e " << TAM_R << " Registradores cada ---" << endl;
-
-    // _pipeline.InstructionFetch();
-    // loop();
 }
 
+// Retorna o valor do contador de programa (_PC).
 int CPU::getPC() {
     return _PC;
 }
 
+// Incrementa o valor do ponteiro de programa e faz um loop com base no tamanho da memória.
 void CPU::incrementaPC() {
     _PC++;
     _PC = _PC % _memoryRAM.getSize();
 }
 
-// // Alternar para um core específico
-// void CPU::alternarCore(int coreId) {
-//     if (coreId >= 0 && coreId < numCoresAtivos) {
-//         coreAtivo = coreId;
-//         cout << "--- Core " << coreAtivo << " Ativo ---" << endl;
-//     } else {
-//         cerr << "Erro: Core inválido!" << endl;
-//     }
-// }
-
-// Lê o valor de um registrador
+// Lê o valor de um registrador específico do núcleo ativo. Valida o registrador e exibe uma mensagem de erro se for inválido.
 int CPU::lerRegistrador(int reg) {
     if (reg > 0 && reg <= TAM_R) {
-        // cout << "Lendo valor do Registrador R" << reg << " no Core " << coreAtivo << ": " << registradores[coreAtivo][reg] << endl;
         return _cores[_coreAtivo]._registradores[reg - 1];
     } else {
         cerr << "Erro: Registrador invalido!" << endl;
         return -1;
     }
-
-    // return 2;
 }
 
-// Escreve um valor em um registrador
+// Escreve um valor em um registrador específico do núcleo ativo e exibe uma mensagem de confirmação. Valida o registrador e exibe erro se for inválido.
 void CPU::escreverRegistrador(int reg, int valor) {
     if (reg > 0 && reg <= TAM_R) {
         _cores[_coreAtivo]._registradores[reg - 1] = valor;
@@ -58,32 +45,13 @@ void CPU::escreverRegistrador(int reg, int valor) {
     }
 }
 
-// Escreve um valor em um endereço de memória
+// Escreve o valor de um registrador em um endereço específico na memória cache.
 void CPU::escreverNaMemoria(int endereco) {
     int valor = lerRegistrador(_reg1);
     _memoryCache.escrever(endereco, valor);
 }
 
-// // Lê um valor de um endereço de memória
-// int CPU::lerDaMemoria(int endereco) {
-//     if (memoria.find(endereco) != memoria.end()) {
-//         cout << "Lendo valor do endereco " << endereco << ": " << memoria[endereco] << endl;
-//         return memoria[endereco];
-//     } else {
-//         cerr << "Erro: Endereco de memoria nao encontrado!" << endl;
-//         return -1;
-//     }
-// }
-
-// // Exibe o estado de registradores relevantes
-// void CPU::mostrarEstadoRegistradores(int reg1, int reg2, int regDest) {
-//     // cout << "Estado atualizado dos registradores no Core " << coreAtivo << ":\n";
-//     // cout << "R" << reg1 << ": " << registradores[coreAtivo][reg1] << endl;
-//     // cout << "R" << reg2 << ": " << registradores[coreAtivo][reg2] << endl;
-//     // cout << "R" << regDest << ": " << registradores[coreAtivo][regDest] << endl;
-// }
-
-// Unidade de Controle
+// Executa operações aritméticas com base no opcode (ADD, SUB, MULT, DIV), chamando a função ULA para realizar a operação e exibindo mensagens para cada operação realizada.
 void CPU::UC(int opcode) {
     int valor1 = lerRegistrador(_reg1);
     int valor2 = lerRegistrador(_reg2);

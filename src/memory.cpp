@@ -1,57 +1,48 @@
-#include "../include/memory.h"
+#include "memory.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
-// Inicializa a cache com uma referência à memória RAM.
-MemoryCache::MemoryCache(MemoryRAM memoryRAM) {
-    _memoryRAM = memoryRAM;
-}
+using namespace std;
 
-// Escreve um par endereço-valor na cache. Caso a cache alcance o tamanho máximo (TAM_CACHE), move o valor mais antigo para a RAM chamando a função memoriaCheia().
-void MemoryCache::escrever(int endereco, int valor) {
-    cout << "Guadando informação na Cache..." << endl;
-    _cache.push(make_pair(endereco, valor));
-
-    if (_cache.size() >= TAM_CACHE) {
-        cout << "[Cache cheia]... Guardando o primeiro valor na memoria RAM" << endl;
-        memoriaCheia();
-    }
-}
-
-// Remove o valor mais antigo da cache e o armazena na RAM, liberando espaço na cache.
-void MemoryCache::memoriaCheia() {
-    auto retirar = _cache.front();
-    _cache.pop();
-    _memoryRAM.escrever(retirar.first, retirar.second);
-}
-
-// Carrega as instruções a partir de um arquivo de texto, adicionando cada linha ao vetor _instrucoes.
 MemoryRAM::MemoryRAM(string path) {
-    ifstream instrFile(path);
-    string linha;
-
-    if (instrFile.is_open()) {
-        while (getline(instrFile, linha)) {
-            _instrucoes.push_back(linha);
-        }
-    } else {
-        cerr << "Erro ao abrir o arquivo de instruções." << endl;
-        exit(EXIT_FAILURE);
+    ifstream file(path);
+    if (!file.is_open()) {
+        throw runtime_error("Não foi possível abrir o arquivo " + path);
     }
-
-    cout << "Instrucoes carregadas!" << endl;
+    string line;
+    while (getline(file, line)) {
+        _instrucoes.push_back(line);
+    }
+    file.close();
 }
 
-// Retorna a instrução armazenada em um endereço específico da memória.
 string MemoryRAM::getInstrucao(int endereco) {
-    return _instrucoes.at(endereco);
+    if (endereco >= 0 && endereco < _instrucoes.size()) {
+        return _instrucoes[endereco];
+    }
+    return "";
 }
 
-// Retorna o número de instruções carregadas na memória.
 size_t MemoryRAM::getSize() {
     return _instrucoes.size();
 }
 
-// Armazena um valor em um endereço específico da memória RAM e exibe uma mensagem de confirmação.
 void MemoryRAM::escrever(int endereco, int valor) {
     _memoria[endereco] = valor;
-    cout << "Valor " << valor << " foi armazenado no endereco " << endereco << endl;
+}
+
+MemoryCache::MemoryCache(MemoryRAM &memoryRAM) : _memoryRAM(memoryRAM) {}
+
+void MemoryCache::escrever(int endereco, int valor) {
+    _cache.push({endereco, valor});
+    memoriaCheia();
+}
+
+void MemoryCache::memoriaCheia() {
+    if (_cache.size() > TAM_CACHE) {
+        auto dado = _cache.front();
+        _cache.pop();
+        _memoryRAM.escrever(dado.first, dado.second);
+    }
 }

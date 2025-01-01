@@ -25,9 +25,10 @@ public:
     CPU(MemoryRAM &memory);
 
     void incrementarPC();
-    int getPC();
-    int lerRegistrador(int reg);
-    void escreverRegistrador(int reg, int valor);
+    int lerRegistrador(int index);     
+    void escreverRegistrador(int index, int valor);  
+    void setPC(int novoPC);              
+    int getPC();                        
     void executarInstrucao(int opcode);
 
     void carregarProcesso(PCB *pcb);

@@ -1,28 +1,40 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-#include "memory.h"
-#include "cpu.h"
+#include <iostream>
 #include <string>
 #include <vector>
+#include <queue>
 #include <sstream>
+#include "cpu.h"
+#include "memory.h"
+
+using namespace std;
 
 class Pipeline {
 private:
-    MemoryRAM &_memoryRAM;
-    CPU &_cpu;
-    std::string _instrucaoAtual;
-    std::string _opcode;
+    MemoryRAM &_memoryRAM;        // Referência para a memória principal
+    CPU &_cpu;                    // Referência para a CPU
+    string _instrucaoAtual;       // Instrução sendo processada
+    string _opcode;               // Opcode decodificado da instrução
 
-    int obterIndiceRegistrador(const std::string &reg);
+    queue<string> _estagioIF;     // Fila para o estágio Instruction Fetch
+    queue<string> _estagioID;     // Fila para o estágio Instruction Decode
+    queue<string> _estagioEX;     // Fila para o estágio Execute
+    queue<string> _estagioMEM;    // Fila para o estágio Memory Access
+    queue<string> _estagioWB;     // Fila para o estágio Write Back
+
+    vector<string> tokenizar(string &instrucao); // Auxiliar para dividir instruções
 
 public:
-    Pipeline(MemoryRAM &memory, CPU &cpu);
-    void loop();
-    void InstructionFetch();
-    void InstructionDecode();
-    void Execute(std::string code);
-    std::vector<std::string> tokenizar(std::string &instrucao);
+    Pipeline(MemoryRAM &memory, CPU &cpu);  // Construtor
+
+    void loop();                            // Ciclo principal do pipeline
+    void InstructionFetch();                // Estágio IF
+    void InstructionDecode();               // Estágio ID
+    void Execute();                         // Estágio EX
+    void MemoryAccess();                    // Estágio MEM
+    void WriteBack();                       // Estágio WB
 };
 
-#endif
+#endif // PIPELINE_H

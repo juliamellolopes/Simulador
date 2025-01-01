@@ -22,16 +22,21 @@ void CPU::incrementarPC() {
     _PC = _PC % _memoryRAM.getSize();
 }
 
+// cpu.cpp
+int CPU::lerRegistrador(int index) {
+    return _registradores[index];
+}
+
+void CPU::escreverRegistrador(int index, int valor) {
+    _registradores[index] = valor;
+}
+
+void CPU::setPC(int novoPC) {
+    _PC = novoPC;
+}
+
 int CPU::getPC() {
     return _PC;
-}
-
-int CPU::lerRegistrador(int reg) {
-    return _cores[_coreAtivo]._registradores[reg - 1];
-}
-
-void CPU::escreverRegistrador(int reg, int valor) {
-    _cores[_coreAtivo]._registradores[reg - 1] = valor;
 }
 
 void CPU::carregarProcesso(PCB *pcb) {

@@ -3,7 +3,7 @@
 
 class ULA {
 public:
-    int executar(int var1, int var2, char operador);
+    int executarOperacao(int operando1, int operando2, string operacao); // Adicionado
 };
 
 #endif

@@ -1,121 +1,155 @@
 #include "../include/pipeline.h"
+#include <queue>
 
+// Estrutura para representar uma instrução no pipeline
+struct Instrucao {
+    std::string instrucaoCompleta;
+    std::string opcode;
+    int regDest, reg1, reg2;
+    int enderecoMemoria;
+    int resultado;
+    bool memoriaEscrita;
 
-// Separa uma instrução em tokens com base em um delimitador (' '), retornando um vetor de strings.
-vector<string> Pipeline::tokenizar(string &instrucao) {
+    Instrucao() : regDest(-1), reg1(-1), reg2(-1), enderecoMemoria(-1), resultado(0), memoriaEscrita(false) {}
+};
+
+// Filas para os estágios do pipeline
+std::queue<Instrucao> IFQueue, IDQueue, EXQueue, MEMQueue, WBQueue;
+
+Pipeline::Pipeline(MemoryRAM &memory, CPU &cpu) {
+    _memoryRAM = memory;
+    _cpu = cpu;
+    _clock = 0;
+    _instrucoesFinalizadas = 0;
+
+    executarPipeline();
+}
+
+void Pipeline::executarPipeline() {
+    const int TAM_I = _memoryRAM.getSize();
+
+    while (_instrucoesFinalizadas < TAM_I) {
+        _clock++;
+        
+        // Avançar instruções entre estágios
+        WriteBack();
+        MemoryAccess();
+        Execute();
+        InstructionDecode();
+        InstructionFetch();
+
+        // Exibir estado do pipeline para debug
+        exibirEstado();
+    }
+}
+
+void Pipeline::InstructionFetch() {
+    if (_cpu.getPC() < _memoryRAM.getSize()) {
+        Instrucao instrucao;
+        instrucao.instrucaoCompleta = _memoryRAM.getInstrucao(_cpu.getPC());
+        _cpu.incrementaPC();
+        IFQueue.push(instrucao);
+
+        std::cout << "\n[IF] Instrução buscada: " << instrucao.instrucaoCompleta << std::endl;
+    }
+}
+
+void Pipeline::InstructionDecode() {
+    if (!IFQueue.empty()) {
+        Instrucao instrucao = IFQueue.front();
+        IFQueue.pop();
+
+        auto tokens = tokenizar(instrucao.instrucaoCompleta);
+        instrucao.opcode = tokens[0];
+
+        if (instrucao.opcode == "LOAD") {
+            instrucao.regDest = obterIndiceRegistrador(tokens[1]);
+            instrucao.enderecoMemoria = stoi(tokens[2]);
+        } else if (instrucao.opcode == "STORE") {
+            instrucao.reg1 = obterIndiceRegistrador(tokens[1]);
+            instrucao.enderecoMemoria = stoi(tokens[2]);
+        } else {
+            instrucao.regDest = obterIndiceRegistrador(tokens[1]);
+            instrucao.reg1 = obterIndiceRegistrador(tokens[2]);
+            instrucao.reg2 = obterIndiceRegistrador(tokens[3]);
+        }
+
+        IDQueue.push(instrucao);
+        std::cout << "[ID] Instrução decodificada: " << instrucao.opcode << std::endl;
+    }
+}
+
+void Pipeline::Execute() {
+    if (!IDQueue.empty()) {
+        Instrucao instrucao = IDQueue.front();
+        IDQueue.pop();
+
+        if (instrucao.opcode == "ADD") {
+            instrucao.resultado = _cpu.lerRegistrador(instrucao.reg1) + _cpu.lerRegistrador(instrucao.reg2);
+        } else if (instrucao.opcode == "SUB") {
+            instrucao.resultado = _cpu.lerRegistrador(instrucao.reg1) - _cpu.lerRegistrador(instrucao.reg2);
+        } else if (instrucao.opcode == "LOAD" || instrucao.opcode == "STORE") {
+            // Adiar para estágio de MEM
+        }
+
+        EXQueue.push(instrucao);
+        std::cout << "[EX] Execução completa: " << instrucao.opcode << std::endl;
+    }
+}
+
+void Pipeline::MemoryAccess() {
+    if (!EXQueue.empty()) {
+        Instrucao instrucao = EXQueue.front();
+        EXQueue.pop();
+
+        if (instrucao.opcode == "LOAD") {
+            instrucao.resultado = _memoryRAM.ler(instrucao.enderecoMemoria);
+        } else if (instrucao.opcode == "STORE") {
+            _memoryRAM.escrever(instrucao.enderecoMemoria, _cpu.lerRegistrador(instrucao.reg1));
+            instrucao.memoriaEscrita = true;
+        }
+
+        MEMQueue.push(instrucao);
+        std::cout << "[MEM] Acesso à memória: " << instrucao.opcode << std::endl;
+    }
+}
+
+void Pipeline::WriteBack() {
+    if (!MEMQueue.empty()) {
+        Instrucao instrucao = MEMQueue.front();
+        MEMQueue.pop();
+
+        if (instrucao.opcode == "LOAD" || instrucao.opcode == "ADD" || instrucao.opcode == "SUB") {
+            _cpu.escreverRegistrador(instrucao.regDest, instrucao.resultado);
+        }
+
+        _instrucoesFinalizadas++;
+        std::cout << "[WB] Write back completo: " << instrucao.opcode << std::endl;
+    }
+}
+
+void Pipeline::exibirEstado() {
+    std::cout << "\nClock: " << _clock << std::endl;
+    std::cout << "IF Queue: " << IFQueue.size() << " | ID Queue: " << IDQueue.size() << " | EX Queue: " << EXQueue.size() << " | MEM Queue: " << MEMQueue.size() << " | WB Queue: " << WBQueue.size() << "\n";
+}
+
+// Função auxiliar para tokenizar uma string em instruções
+std::vector<std::string> Pipeline::tokenizar(std::string &instrucao) {
     char del = ' ';
+    std::stringstream sstream(instrucao);
+    std::string token;
+    std::vector<std::string> tokens;
 
-    stringstream sstream(instrucao);
-    string token;
-    vector<string>tokens;
-
-    while (getline(sstream, token, del))
+    while (std::getline(sstream, token, del))
         tokens.push_back(token);
 
     return tokens;
 }
 
-// Inicializa o pipeline com referências para a memória e a CPU, ajustando valores iniciais e iniciando o loop de execução.
-Pipeline::Pipeline(MemoryRAM &memory, CPU &cpu) {
-    _memoryRAM = memory;
-    _cpu = cpu;
-    _instrucaoAtual.assign("");
-    _opcode.assign("");
-    _cpu._reg1 = _cpu._reg2 = _cpu._regDest = 0;
-
-    loop();
-}
-
-//  Controla o ciclo de execução de instruções. Itera até que todas as instruções na memória sejam executadas, chamando a etapa de busca (InstructionFetch) para instruções ainda não processadas.
-void Pipeline::loop() {
-    const int TAM_I = _memoryRAM.getSize();   // tamanho de instruções 
-    vector<bool> control(TAM_I, false);       // variavel de controle da utilização da instrução (true - usado, false - não usado)
-    int cont = TAM_I;
-
-    while (cont > 0) {
-        if (control[_cpu.getPC()] == false) {
-            cont = TAM_I;
-            control[_cpu.getPC()] = true;
-            InstructionFetch();
-        } else {
-            cont--;
-        }
-    }
-}
-
-// Executa a busca da instrução atual na memória e incrementa o contador de programa (PC). Passa a instrução para a próxima etapa, InstructionDecode.
-void Pipeline::InstructionFetch() {
-    cout << "\n--------- Pipeline Stage: Instruction Fetch ---------\n";
-    cout << "Buscando instrucao..." << endl;
-    _instrucaoAtual.assign(_memoryRAM.getInstrucao(_cpu.getPC()));
-
-    InstructionDecode();
-
-    _cpu.incrementaPC();
-}
-
-// Converte um nome de registrador (como R1) em seu índice numérico. Exibe uma mensagem de erro caso o registrador seja inválido.
-int obterIndiceRegistrador(const string &reg) {
+int obterIndiceRegistrador(const std::string &reg) {
     if (reg[0] == 'R') {
-        return stoi(reg.substr(1)); // Converte o número após 'R' em um inteiro
+        return stoi(reg.substr(1));
     }
-    cerr << "Erro: Registrador inválido " << reg << endl;
+    std::cerr << "Erro: Registrador inválido " << reg << std::endl;
     exit(EXIT_FAILURE);
-}
-
-// Decodifica a instrução atual, identificando o opcode e os registradores envolvidos, utilizando a função auxiliar obterIndiceRegistrador para interpretar índices de registradores.
-void Pipeline::InstructionDecode() {
-    cout << "\n--------- Pipeline Stage: Instruction Decode ---------\n";
-
-    cout << "Decodificand: " << _instrucaoAtual << endl;
-
-    auto tokens = tokenizar(_instrucaoAtual);
-    _opcode = tokens[0];
-
-    if (_opcode.compare("LOAD") == 0) {
-        _cpu._reg1 = obterIndiceRegistrador(tokens[1]);
-        auto valor = stoi(tokens[2]);
-        _cpu.escreverRegistrador(_cpu._reg1, valor);
-    } else if (_opcode.compare("STORE") == 0) {
-        auto endereco = stoi(tokens[2]);
-        _cpu._reg1 = obterIndiceRegistrador(tokens[1]);
-
-        _cpu.escreverNaMemoria(endereco);
-    } else if (_opcode.compare("IF") == 0) {
-        _cpu._reg1 = obterIndiceRegistrador(tokens[1]);
-        _cpu._reg2 = obterIndiceRegistrador(tokens[3]);
-
-        Execute(tokens[2]);
-    } else {
-        _cpu._regDest = obterIndiceRegistrador(tokens[1]);
-        _cpu._reg1 = obterIndiceRegistrador(tokens[2]);
-        _cpu._reg2 = obterIndiceRegistrador(tokens[3]);
-
-        Execute(_opcode);
-    }
-}
-
-// Etapa de Execução
-void Pipeline::Execute(string code) {
-    cout << "\n--------- Pipeline Stage: Execution ---------\n";
-    cout << "Chamando operações CPU" << endl;
-
-    if (code.compare("<") == 0) {
-        _cpu.UC(4);
-    } else if (code.compare(">") == 0) {
-        _cpu.UC(5);
-    } else if (code.compare("=") == 0) {
-        _cpu.UC(6);
-    } else if (code.compare("ADD") == 0) {
-        _cpu.UC(0);
-    } else if (code.compare("SUB") == 0) {
-        _cpu.UC(1);
-    } else if (code.compare("MULT") == 0) {
-        _cpu.UC(2);
-    } else if (code.compare("DIV") == 0) {
-        _cpu.UC(3);
-    } else {
-        cerr << "Erro opcode nao encontrado." << endl;
-        exit(EXIT_FAILURE);
-    }
 }
